@@ -7,3 +7,5 @@ STEPHEN K/DAN L- add, edit, delete decks
 
 
 Ruben - menu (front end)
+
+Adam - get study session working
