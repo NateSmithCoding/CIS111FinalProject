@@ -10,7 +10,10 @@ public class Deck
    {
       this.name  =  name;
       this.cards = cards;
-      createTxt();
+      if(!this.name.equals("Current Deck"))//creates text file when its created if it isn't the study session deck.
+      {
+    	  createTxt();
+      }
    }
    
    public static Deck findDeck(Deck[] decks,String name)
@@ -67,7 +70,7 @@ public class Deck
       return output;
    }
    
-   public void suffle()
+   public void shuffle()
    {
       Random rand = new Random();
       for(int i=0; i<cards.length;i++)
@@ -90,6 +93,22 @@ public class Deck
       }
       temp[temp.length-1] = c;
       cards =  temp.clone();
+      createTxt();
+   }
+   
+   public void addCards(Card[] addCards) throws IOException
+   {
+      Card[] temp = new Card[cards.length+addCards.length];
+      int i = 0;
+      for(Card c : cards)
+      {
+         temp[i++] = c;
+      }
+      for(Card d : addCards)
+      {
+         temp[i++] = d;
+      }
+      cards = temp.clone();
       createTxt();
    }
 
@@ -144,5 +163,10 @@ public class Deck
       }
       outputFile.close();
    }
+
+	public int length() 
+	{
+		return cards.length;
+	}
 
 }

@@ -6,15 +6,13 @@ public class QuizMain
 {
    public static void main(String[] args) throws IOException
    {
-      	  
-      //Make deck from txt
+      //Make deck from text
       File decks = new File("Decks");
          
-      // create
-      boolean bool = decks.mkdir();
+      // create decks folder
+      decks.mkdir();
       
       // print
-      System.out.println("Directory created? "+bool);
       
       String deckFilename = "Decks/";
       File folder = new File(deckFilename); 
@@ -32,33 +30,112 @@ public class QuizMain
       
       //printDecks(allDecks);
       
-      //Set up study session
-      Card[] currentCards = {};
-      //Ask user what deck they would like to use and add it to
+      //STUDY SESSION BELOW
+      Deck currentDeck =  createStudyDeck(allDecks);
       
+      //System.out.print(currentDeck.toString());
+      
+      int repeatTimes = 0;
+      do
+      {
+    	  repeatTimes = inputNumber("How many times should each question be asked?");
+      } while(repeatTimes<0);
+      
+      Card[] tempCards = currentDeck.getCards();
+      for(int i=1;i<repeatTimes;i++)
+      {
+    	  currentDeck.addCards(tempCards);
+      }
+      
+      currentDeck.shuffle();//shuffle deck
+      
+      int i=currentDeck.length()-1;
+      for(Card c : currentDeck.getCards())
+      {
+    	  while(!confirmDialog(c.getQuestion()+"\nQuestions left: " + i--,"Show Answer","Quit"))
+    	  {
+    		  if(quitDialog())
+    		  {
+    			  System.exit(0);
+    		  }
+    	  }
+    	  if(!confirmDialog(c.getAnswer(),"Next Question","Quit"))
+    	  {
+	  		  if(quitDialog())
+	  		  {
+	  			  System.exit(0);
+	  		  }
+    	  }
+      }
+   }
+   
+   public static boolean confirmDialog(String display,String option1, String option2)
+   {
+	   Object[] options1 = { option1, option2 };
+	   return (0==JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, null));
+   }
+   
+   
+   public static void displayString(String display)
+   {
+	   JOptionPane.showMessageDialog(null, display);
+   }
+   
+   public static boolean quitDialog()
+   {
+	   return confirmDialog("Are you sure you want to quit", "Yes", "No");
+   }
+   
+   public static Deck createStudyDeck(Deck[] allDecks) throws IOException
+   {
+	  Card[] currentCards = {};
+	      //Ask user what deck they would like to use and add it to
+	  
+	  
       boolean addDeck = true;
+      
+      boolean oneDeckAdded = false;
+      
+      
+      int userDeckIndex = 0;
       
       while(addDeck)
       {
-         String userDeck = inputString("Enter Deck name");
-         if (Deck.checkForDeck(allDecks,userDeck))
+         String userDeck = inputString("Enter deck name or type deck number:\n" + deckNamesToString(allDecks));
+         userDeckIndex = -1;
+         boolean indexDeck = false;
+         if (isNumeric(userDeck))
+         {
+    		userDeckIndex = Integer.parseInt(userDeck)-1;
+    		if(userDeckIndex>=0 && userDeckIndex<allDecks.length)
+    		{
+    			Card[] temp = ((allDecks[userDeckIndex])).getCards();
+    			currentCards = addCards(currentCards,temp);
+    			indexDeck = true;
+    			oneDeckAdded = true;
+    		}
+         }
+         
+         if (Deck.checkForDeck(allDecks,userDeck) && !indexDeck)
          {
             Card[] temp = (Deck.findDeck(allDecks,userDeck)).getCards();
             currentCards = addCards(currentCards,temp);//make large card array
+            oneDeckAdded = true;
          }
-         else
+         else if(!indexDeck)
          {
-            System.out.println("Error, deck not found");
+            displayString(("Error, deck not found"));
          }
-         if(inputYesOrNo("Add another deck (y/n)").equalsIgnoreCase("n"))
+         
+         if(oneDeckAdded)
          {
-            addDeck= false;
-         }   
+	         if(!confirmDialog("Add another deck?", "Yes", "No"))
+	         {
+	            addDeck= false;
+	         }
+         }
       }
-      
-      Deck currentDeck =  new Deck("Current Deck",currentCards);
-      System.out.print(currentDeck.toString());
-      
+      return new Deck("Current Deck",currentCards);
    }
    
    public static Card[] addCard(Card[] cards, Card card)
@@ -131,6 +208,18 @@ public class QuizMain
     	  tempDecks[i++] = getDeckFromFile(X);
       }
       return tempDecks;
+   }
+   
+   public static String deckNamesToString(Deck[] decks)
+   {
+	   String output = "";
+	   int i=1;
+	   for(Deck d : decks)
+	   {
+		   output += i++ + ": ";
+		   output += d.getName() + "\n";
+	   }
+	   return output;
    }
    
    public static void addDeck(Deck[] decks,Deck addDeck)
@@ -248,26 +337,6 @@ public class QuizMain
       return output;
    }
    
-   public static String inputYesOrNo(String context)
-   {
-      String answer = "";
-      boolean valid = false;
-      do
-      {
-         answer = inputString(context);
-         answer = answer.toLowerCase();
-         char a = answer.charAt(0);
-         if(a == 'y' || a== 'n')
-         {
-            valid = true;
-         }
-         else
-         {
-            JOptionPane.showMessageDialog(null,"Please only enter yes or no.");
-         }
-      } while (!valid);
-      return(answer.substring(0,1));
-   }
    
    public static String getQuestionFromLine(String line)
    {
