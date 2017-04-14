@@ -1,3 +1,4 @@
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import java.util.*;
 import java.io.*;
@@ -6,73 +7,167 @@ public class QuizMain
 {
    public static void main(String[] args) throws IOException
    {
-      //Make deck from text
-      File decks = new File("Decks");
+	  
+      //Make deck directory 
+      File deckDir = new File("Decks");
          
       // create decks folder
-      decks.mkdir();
+      deckDir.mkdir();
       
-      // print
-      
-      String deckFilename = "Decks/";
-      File folder = new File(deckFilename); 
-      
-      
-      //list all files
-      File[] files = folder.listFiles();      
-      
-      Deck[] allDecks =  new Deck[(files.length)];
-      allDecks = turnFilesToDecks(files);
-      
-      printDeck(allDecks[3]);
-
-      //addDeck(allDecks, makeMultiDeck());
-      
-      //printDecks(allDecks);
-      
-      //STUDY SESSION BELOW
-      Deck currentDeck =  createStudyDeck(allDecks);
-      
-      //System.out.print(currentDeck.toString());
-      
-      int repeatTimes = 0;
-      do
-      {
-    	  repeatTimes = inputNumber("How many times should each question be asked?");
-      } while(repeatTimes<0);
-      
-      Card[] tempCards = currentDeck.getCards();
-      for(int i=1;i<repeatTimes;i++)
-      {
-    	  currentDeck.addCards(tempCards);
-      }
-      
-      currentDeck.shuffle();//shuffle deck
-      
-      int i=currentDeck.length()-1;
-      for(Card c : currentDeck.getCards())
-      {
-    	  while(!confirmDialog(c.getQuestion()+"\nQuestions left: " + i--,"Show Answer","Quit"))
-    	  {
-    		  if(quitDialog())
-    		  {
-    			  System.exit(0);
-    		  }
-    	  }
-    	  if(!confirmDialog(c.getAnswer(),"Next Question","Quit"))
-    	  {
-	  		  if(quitDialog())
-	  		  {
-	  			  System.exit(0);
-	  		  }
-    	  }
-      }
+      studySession();//everything for study session is in this one method
    }
    
-   public static boolean confirmDialog(String display,String option1, String option2)
+   public static void studySession() throws IOException
    {
-	   Object[] options1 = { option1, option2 };
-	   return (0==JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, null));
+	
+	  //get an array from deck name text file
+	  String[] allDecksNames = getDeckNames();
+	  
+	  //sort deck names alphabetically
+	  sortStrings(allDecksNames);
+	  
+	  //STUDY SESSION BELOW
+	  Deck currentDeck =  createStudyDeck(allDecksNames);
+	  
+	  int repeatTimes = 0;
+	  do
+	  {
+		  repeatTimes = inputNumber("How many times should each question be asked?");
+		  if(repeatTimes<0)
+		  {
+			  displayString("Error, need to go through at least once.");
+		  }
+	  } while(repeatTimes<0);
+	  
+	  Card[] tempCards = currentDeck.getCards();
+	  for(int i=1;i<repeatTimes;i++)
+	  {
+		  currentDeck.addCards(tempCards);
+	  }
+	  
+	  currentDeck.shuffle();//shuffle deck
+	  
+	  int cardsLeft=currentDeck.length()-1;
+	  for(int k=0;k<currentDeck.length();k++)//k is the times 
+	  {
+		  Card[] studyCards = currentDeck.getCards();
+		  int quizInt=0;
+		  do{//question loop
+	    	  quizInt = quizCardDialog(studyCards[k].getQuestion()+"\nQuestions left: " + cardsLeft,"Show Answer");
+	    	  if(quizInt==1)
+	    	  {
+	    		  displayString("Question Flagged ");
+	    		  currentDeck.addCardRandomIndex(studyCards[k],k);
+	    		  cardsLeft++;
+	    	  }
+	    	  else if(quizInt == 2)
+	    	  {
+	    		  if(quitDialog())
+	    		  {
+	    			  System.exit(0);
+	    		  }
+	    	  }
+		  }while(quizInt!=0);
+		  cardsLeft--;
+		  do{//answer loop
+	    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
+	    	  if(quizInt==1)
+	    	  {
+	    		  displayString("Question Flagged");
+	    		  currentDeck.addCardRandomIndex(studyCards[k],k);
+	    		  cardsLeft++;
+	    	  }
+	    	  else if(quizInt == 2)
+	    	  {
+	    		  if(quitDialog())
+	    		  {
+	    			  System.exit(0);
+	    		  }
+	    	  }
+		  }while(quizInt !=0);
+	  }
+   }
+   
+   public static void sortStrings( String[] strings )
+   {
+     int j;
+     boolean flag = true;   // set flag to true to begin first pass
+     String temp;   //holding variable
+
+     while ( flag )
+     {
+            flag= false;    //set flag to false awaiting a possible swap
+            for( j=0;  j < strings.length -1;  j++ )
+            {
+                   if ( alphaCompare(strings[j+1],strings[j]) )
+                   {
+                          temp = strings[ j ];                //swap elements
+                          strings[ j ] = strings[ j+1 ];
+                          strings[ j+1 ] = temp;
+                          flag = true;              //shows a swap occurred  
+                  } 
+            } 
+      } 
+   } 
+   
+   public static boolean alphaCompare(String stringA, String stringB)//returns true if a is alphabetically before b
+   {
+	   
+	   int stringLen = Math.min(stringA.length(), stringB.length());
+	   
+	   for(int i=0;i<stringLen;i++)
+	   {
+		   char a = stringA.charAt(i);
+		   char b = stringB.charAt(i);
+		   if(a<b)
+		   {
+			   return true;
+		   }
+		   else if(a>b)
+		   {
+			   return false;
+		   }
+	   }
+	   return stringA.length()-stringB.length()<0;
+   }
+
+   public static String[] getDeckNames() throws IOException 
+   {
+      //get the text file with all the deck names
+      File deckNames = new File("Deck_Names.txt");//load name file
+      deckNames.createNewFile();
+      //find number of lines
+      Scanner scanNamesLines = new Scanner(deckNames);//scan lines
+      int k=0;
+      while(scanNamesLines.hasNext())
+      {
+    	  k++;
+    	  scanNamesLines.nextLine();
+      }
+    	 
+      scanNamesLines.close();
+      //Scan deck name file and get names
+      String[] allDecksNames = new String[k];//create array with k size
+      k=0;//reset k for while loop
+      Scanner scanNames = new Scanner(deckNames);//scan lines
+      while(scanNames.hasNext())
+      {
+    	  allDecksNames[k++] = scanNames.nextLine();
+      }
+      scanNames.close();
+      
+      return allDecksNames;
+   }
+
+   public static boolean confirmDialog(String display)
+   {
+	   return (0==JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null));
+   }
+   
+   public static int quizCardDialog(String display,String option1)
+   {
+	   Object[] options1 = { option1, "Flag","Quit" };
+	   return JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, null);
    }
    
    
@@ -83,61 +178,55 @@ public class QuizMain
    
    public static boolean quitDialog()
    {
-	   return confirmDialog("Are you sure you want to quit", "Yes", "No");
+	   return confirmDialog("Are you sure you want to quit");
    }
    
-   public static Deck createStudyDeck(Deck[] allDecks) throws IOException
+   public static Deck createStudyDeck(String[] deckNams) throws IOException
    {
 	  Card[] currentCards = {};
-	      //Ask user what deck they would like to use and add it to
 	  
 	  
       boolean addDeck = true;
       
-      boolean oneDeckAdded = false;
-      
-      
-      int userDeckIndex = 0;
       
       while(addDeck)
       {
-         String userDeck = inputString("Enter deck name or type deck number:\n" + deckNamesToString(allDecks));
-         userDeckIndex = -1;
-         boolean indexDeck = false;
-         if (isNumeric(userDeck))
+         String userDeck = dropdownString("Choose a deck:",deckNams);
+         
+         File tempFile = new File("Decks/"+ userDeck + ".deck");
+         
+         Deck tempDeck = getDeckFromFile(tempFile);
+         
+         Card[] tempCards = tempDeck.getCards();
+         
+         currentCards = addCards(currentCards, tempCards);
+
+         if(!confirmDialog("Add another deck?"))
          {
-    		userDeckIndex = Integer.parseInt(userDeck)-1;
-    		if(userDeckIndex>=0 && userDeckIndex<allDecks.length)
-    		{
-    			Card[] temp = ((allDecks[userDeckIndex])).getCards();
-    			currentCards = addCards(currentCards,temp);
-    			indexDeck = true;
-    			oneDeckAdded = true;
-    		}
+            addDeck= false;
          }
          
-         if (Deck.checkForDeck(allDecks,userDeck) && !indexDeck)
-         {
-            Card[] temp = (Deck.findDeck(allDecks,userDeck)).getCards();
-            currentCards = addCards(currentCards,temp);//make large card array
-            oneDeckAdded = true;
-         }
-         else if(!indexDeck)
-         {
-            displayString(("Error, deck not found"));
-         }
-         
-         if(oneDeckAdded)
-         {
-	         if(!confirmDialog("Add another deck?", "Yes", "No"))
-	         {
-	            addDeck= false;
-	         }
-         }
       }
       return new Deck("Current Deck",currentCards);
    }
    
+   public static String dropdownString(String string, String[] deckNams) 
+   {
+		JComboBox deckList = new JComboBox(deckNams);
+		boolean canceled = false;
+		do{
+			canceled = 2==JOptionPane.showConfirmDialog(null, deckList, "Choose a deck", JOptionPane.OK_CANCEL_OPTION);
+			if(canceled)
+			{
+				if(quitDialog())
+				{
+					System.exit(0);
+				}
+			}
+		} while(canceled);
+		return deckNams[deckList.getSelectedIndex()];
+   }
+
    public static Card[] addCard(Card[] cards, Card card)
    {
       Card[] temp = new Card[cards.length+1];
@@ -194,12 +283,12 @@ public class QuizMain
 			multiplyCards[i++] = temp;
 		}
       }
-      Deck multiDeck = new Deck("Times_Tables_" + multiRangeLow + "X" + multiRangeHigh,multiplyCards);
+      Deck multiDeck = new Deck("Times Tables " + multiRangeLow + "X" + multiRangeHigh,multiplyCards);
       return multiDeck;
    }
    
    
-   public static Deck[] turnFilesToDecks(File[] files) throws IOException
+   public static Deck[] turnFilesToDecks(File[] files) throws IOException //old method for creating deck arrays
    {
       int i = 0;
       Deck[] tempDecks = new Deck[files.length];
@@ -210,7 +299,7 @@ public class QuizMain
       return tempDecks;
    }
    
-   public static String deckNamesToString(Deck[] decks)
+   public static String deckNamesToString(Deck[] decks) //old method for test deck arrays
    {
 	   String output = "";
 	   int i=1;
@@ -222,7 +311,7 @@ public class QuizMain
 	   return output;
    }
    
-   public static void addDeck(Deck[] decks,Deck addDeck)
+   public static void addDeck(Deck[] decks,Deck addDeck)//old method for adding decks
    {
       Deck[] temp = new Deck[decks.length+1];
       int i=0;
@@ -234,13 +323,13 @@ public class QuizMain
       decks =  temp.clone();
    }
    
-   public static void printDeck(Deck deck)
+   public static void printDeck(Deck deck) //for testing decks
    {
 	   System.out.println(deck.toString());
    }
    
    
-   public static void printDecks(Deck[] decks)
+   public static void printDecks(Deck[] decks)//old method for testing deck arrays
    {
 	      for(Deck X : decks)
 	      {
@@ -248,11 +337,11 @@ public class QuizMain
 	      }
    }
    
-   public static Deck getDeckFromFile(File tempFile) throws IOException
+   public static Deck getDeckFromFile(File tempFile) throws IOException//turns a file into a deck by reading it
    {
       Scanner scanFileLines = new Scanner(tempFile);
       int line = 0;           
-      int totalLines = -1;
+      int totalLines = 0;
       // scan file to get deck
       
       while(scanFileLines.hasNext())
@@ -263,22 +352,15 @@ public class QuizMain
       
       Scanner scanFile = new Scanner(tempFile);
       Card[] cards = new Card[totalLines];
-      String title = "";
-      boolean firstline = true;
+      String title = tempFile.getName();
+      title = title.substring(0,title.length()-5);
       while(scanFile.hasNext())
       {
-         String nextLine = scanFile.nextLine();
-         if(firstline)
-         {
-            title = nextLine;
-            firstline = false;
-         }
-         else
-         {
-            Card newCard = new Card(getQuestionFromLine(nextLine),getAnswerFromLine(nextLine));
-            //make a card from the text document
-            cards[line++] = newCard; //put that card into an array
-         }
+    	  
+		  String nextLine = scanFile.nextLine();
+		  Card newCard = new Card(getQuestionFromLine(nextLine),getAnswerFromLine(nextLine));
+		  //make a card from the text document
+		  cards[line++] = newCard; //put that card into an array
       }
       
       scanFile.close();
@@ -287,7 +369,7 @@ public class QuizMain
       return returnDeck;
 
    }
-   public static boolean isNumeric(String num)
+   public static boolean isNumeric(String num)//checks if string is numeric
    {
 	  if(num==null)
 	  {
@@ -305,7 +387,7 @@ public class QuizMain
       }
    }
    
-   public static int inputNumber(String context)
+   public static int inputNumber(String context)//auto turns string into an int
    {
 	  String inputNum="";
       do{//check input in range
@@ -327,7 +409,7 @@ public class QuizMain
       return 0;
    }
    
-   public static String inputString(String context)
+   public static String inputString(String context)//shorter input dialog
    {
       String output = JOptionPane.showInputDialog(context);
       if(output == null)
@@ -338,7 +420,7 @@ public class QuizMain
    }
    
    
-   public static String getQuestionFromLine(String line)
+   public static String getQuestionFromLine(String line)//turns line into a substring that is only the question
    {
       boolean ended = false;
       String returnString = "";
@@ -357,7 +439,7 @@ public class QuizMain
       return returnString;
    }
    
-   public static String getAnswerFromLine(String line)
+   public static String getAnswerFromLine(String line)//get substring of line that is only the answer
    {
       boolean started = false;
       String returnString = "";
@@ -377,7 +459,7 @@ public class QuizMain
    }
    
    
-   public static int combinations(int n)
+   public static int combinations(int n)//gets the size for a multideck
    {
 	   return (n*(n+1))/2;
    }

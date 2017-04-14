@@ -6,39 +6,10 @@ public class Deck
    private String name;
    private Card[] cards;
    
-   public Deck(String name,Card[] cards) throws IOException
+   public Deck(String name,Card[] cards)
    {
       this.name  =  name;
       this.cards = cards;
-      if(!this.name.equals("Current Deck"))//creates text file when its created if it isn't the study session deck.
-      {
-    	  createTxt();
-      }
-   }
-   
-   public static Deck findDeck(Deck[] decks,String name)
-   {
-      for (Deck d : decks)
-      {
-         if(d.getName().equals(name))
-         {
-            return d;
-         }
-      }
-      return decks[0];//never should return
-   }
-   
-   
-   public static boolean checkForDeck(Deck[] decks,String name)
-   {
-      for (Deck d : decks)
-      {
-         if(d.getName().equals(name))
-         {
-            return true;
-         }
-      }
-      return false;
    }
    
    public Card[] getCards()
@@ -83,7 +54,7 @@ public class Deck
       }
    }
    
-   public void addCard(Card c) throws IOException
+   public void addCard(Card c)
    {
       Card[] temp = new Card[cards.length+1];
       int i=0;
@@ -93,10 +64,9 @@ public class Deck
       }
       temp[temp.length-1] = c;
       cards =  temp.clone();
-      createTxt();
    }
    
-   public void addCards(Card[] addCards) throws IOException
+   public void addCards(Card[] addCards)
    {
       Card[] temp = new Card[cards.length+addCards.length];
       int i = 0;
@@ -109,10 +79,10 @@ public class Deck
          temp[i++] = d;
       }
       cards = temp.clone();
-      createTxt();
    }
+   
 
-   public void removeCardIndex(int num) throws IOException
+   public void removeCardIndex(int num)
    {
       Card[] temp = new Card[cards.length-1];
       int i=0;
@@ -126,7 +96,6 @@ public class Deck
    	   j++;
       }
       cards =  temp.clone();
-      createTxt();
    }
    
    public void removeCardQuestion(String question)
@@ -135,8 +104,8 @@ public class Deck
       int i=0;
       for (Card x : cards)
       {
-	      String xQ = x.getQuestion();
-	      if(question.equals(xQ))
+	     String xQ = x.getQuestion();
+	     if(question.equals(xQ))
          {
             temp[i++] = x;
          }
@@ -151,22 +120,65 @@ public class Deck
       deckFilename += name + ".deck";
 	      
 	  File file = new File(deckFilename);
-	  file.createNewFile();
-      PrintWriter outputFile =  new PrintWriter(file);
-      outputFile.println(name);
-  
-      for (Card c : cards)
-      {
-    	  outputFile.print(c.getQuestion());
-    	  outputFile.print("|");
-    	  outputFile.println(c.getAnswer());
-      }
-      outputFile.close();
+	  boolean created = file.createNewFile();
+	  if(created)
+	  {
+	      PrintWriter outputFile =  new PrintWriter(file);
+	      for (Card c : cards)
+	      {
+	    	  outputFile.print(c.getQuestion());
+	    	  outputFile.print("|");
+	    	  outputFile.println(c.getAnswer());
+	      }
+	      outputFile.close();
+	      
+	      File nameFile = new File("Deck_Names.txt");
+	      nameFile.createNewFile();
+	      
+	      String[] names = QuizMain.getDeckNames();
+	      
+	      PrintWriter namePrint = new PrintWriter(nameFile);
+	      
+	      for(String str: names)
+	      {
+	    	  namePrint.println(str);
+	      }
+	      namePrint.println(name);
+	      
+	      
+	      namePrint.close();
+	  }
    }
 
 	public int length() 
 	{
 		return cards.length;
+	}
+
+	public void addCardRandomIndex(Card c,int num)//card added and card number
+	{
+		Random rand = new Random();
+		int x = num+1;
+		int r = rand.nextInt(cards.length+1-x)+x;
+		addCardIndex(c, r);
+	}
+	
+	public void addCardIndex(Card c,int in)
+	{
+      Card[] temp = new Card[cards.length+1];
+      int j=0;
+      for (int i=0;i<temp.length;i++)
+      {
+    	 if(i!=in)
+    	 {
+    		 temp[i] = cards[j++];
+    	 }
+    	 else
+    	 {
+    		 temp[i] = c;
+    	 }
+      }
+      cards =  temp.clone();
 	}
 
 }
