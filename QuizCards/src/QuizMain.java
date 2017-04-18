@@ -210,12 +210,12 @@ public class QuizMain
       return new Deck("Current Deck",currentCards);
    }
    
-   public static String dropdownString(String string, String[] deckNams) 
+   public static String dropdownString(String context,String[] options) 
    {
-		JComboBox deckList = new JComboBox(deckNams);
+		JComboBox comboBox = new JComboBox(options);
 		boolean canceled = false;
 		do{
-			canceled = 2==JOptionPane.showConfirmDialog(null, deckList, "Choose a deck", JOptionPane.OK_CANCEL_OPTION);
+			canceled = 2==JOptionPane.showConfirmDialog(null, comboBox, context, JOptionPane.OK_CANCEL_OPTION);
 			if(canceled)
 			{
 				if(quitDialog())
@@ -224,7 +224,7 @@ public class QuizMain
 				}
 			}
 		} while(canceled);
-		return deckNams[deckList.getSelectedIndex()];
+		return options[comboBox.getSelectedIndex()];
    }
 
    public static Card[] addCard(Card[] cards, Card card)
