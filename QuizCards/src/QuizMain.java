@@ -14,7 +14,9 @@ public class QuizMain
       // create decks folder
       deckDir.mkdir();
       
-      studySession();//everything for study session is in this one method
+      DeckControl.controlMethod();
+      
+      //studySession();//everything for study session is in this one method     
    }
    
    public static void studySession() throws IOException
@@ -33,11 +35,11 @@ public class QuizMain
 	  do
 	  {
 		  repeatTimes = inputNumber("How many times should each question be asked?");
-		  if(repeatTimes<0)
+		  if(repeatTimes<1)
 		  {
 			  displayString("Error, need to go through at least once.");
 		  }
-	  } while(repeatTimes<0);
+	  } while(repeatTimes<1);
 	  
 	  Card[] tempCards = currentDeck.getCards();
 	  for(int i=1;i<repeatTimes;i++)
@@ -236,7 +238,7 @@ public class QuizMain
          temp[i++] = c;
       }
       temp[temp.length-1] = card;
-      return temp;
+      return temp.clone();
    }
    
    public static Card[] addCards(Card[] cards, Card[] addCards)

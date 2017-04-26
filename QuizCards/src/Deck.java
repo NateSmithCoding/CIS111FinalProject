@@ -30,7 +30,7 @@ public class Deck
    public String toString()
    {
       String output=name + "\n";
-      int i=0;
+      int i=1;
       for (Card c : cards)
       {
          output += i + " ";
@@ -105,7 +105,7 @@ public class Deck
       for (Card x : cards)
       {
 	     String xQ = x.getQuestion();
-	     if(question.equals(xQ))
+	     if(!question.equals(xQ))
          {
             temp[i++] = x;
          }
@@ -119,22 +119,24 @@ public class Deck
       
       deckFilename += name + ".deck";
 	      
-	  File file = new File(deckFilename);
-	  boolean created = file.createNewFile();
-	  if(created)
-	  {
-	      PrintWriter outputFile =  new PrintWriter(file);
-	      for (Card c : cards)
-	      {
-	    	  outputFile.print(c.getQuestion());
-	    	  outputFile.print("|");
-	    	  outputFile.println(c.getAnswer());
-	      }
-	      outputFile.close();
-	      
-	      File nameFile = new File("Deck_Names.txt");
-	      nameFile.createNewFile();
-	      
+	  File deckfile = new File(deckFilename);
+	  boolean newdeck = deckfile.createNewFile();//checks if deck is new
+	  
+	  //make deck file or edit deckfile
+      PrintWriter outputFile =  new PrintWriter(deckfile);
+      for (Card c : cards)
+      {
+    	  outputFile.print(c.getQuestion());
+    	  outputFile.print("|");
+    	  outputFile.println(c.getAnswer());
+      }
+      outputFile.close();
+      
+      if(newdeck)//if new deck add deck name to names file
+      {
+    	  File nameFile = new File("Deck_Names.txt");
+    	  nameFile.createNewFile();
+      
 	      String[] names = QuizMain.getDeckNames();
 	      
 	      PrintWriter namePrint = new PrintWriter(nameFile);
@@ -144,10 +146,10 @@ public class Deck
 	    	  namePrint.println(str);
 	      }
 	      namePrint.println(name);
-	      
-	      
+	         
 	      namePrint.close();
-	  }
+      }
+  
    }
 
 	public int length() 
