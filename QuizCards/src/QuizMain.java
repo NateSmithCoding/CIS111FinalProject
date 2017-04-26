@@ -29,7 +29,7 @@ public class QuizMain
 	  sortStrings(allDecksNames);
 	  
 	  //STUDY SESSION BELOW
-	  Deck currentDeck =  createStudyDeck(allDecksNames);
+	  Deck currentDeck = createStudyDeck(allDecksNames);
 	  
 	  int repeatTimes = 0;
 	  do
@@ -190,24 +190,35 @@ public class QuizMain
 	  
       boolean addDeck = true;
       
+      boolean oneAdded = false;
       
       while(addDeck)
       {
          String userDeck = dropdownString("Choose a deck:",deckNams);
          
-         File tempFile = new File("Decks/"+ userDeck + ".deck");
+         boolean cancel = userDeck.equals("cancel");
          
-         Deck tempDeck = getDeckFromFile(tempFile);
          
-         Card[] tempCards = tempDeck.getCards();
-         
-         currentCards = addCards(currentCards, tempCards);
-
-         if(!confirmDialog("Add another deck?"))
+         if(!cancel)
          {
-            addDeck= false;
+        	File tempFile = new File("Decks/"+ userDeck + ".deck");
+         
+         	Deck tempDeck = getDeckFromFile(tempFile);
+         
+         	Card[] tempCards = tempDeck.getCards();
+         
+         	currentCards = addCards(currentCards, tempCards);
+         	
+         	oneAdded = true;
          }
          
+         if(oneAdded)
+         {
+	         if(!confirmDialog("Add another deck?"))
+	         {
+	            addDeck= false;
+	         }
+         }
       }
       return new Deck("Current Deck",currentCards);
    }
@@ -220,10 +231,7 @@ public class QuizMain
 			canceled = 2==JOptionPane.showConfirmDialog(null, comboBox, context, JOptionPane.OK_CANCEL_OPTION);
 			if(canceled)
 			{
-				if(quitDialog())
-				{
-					System.exit(0);
-				}
+				return "cancel";
 			}
 		} while(canceled);
 		return options[comboBox.getSelectedIndex()];
@@ -413,11 +421,19 @@ public class QuizMain
    
    public static String inputString(String context)//shorter input dialog
    {
-      String output = JOptionPane.showInputDialog(context);
-      if(output == null)
+	  
+	  String output = JOptionPane.showInputDialog(context);
+	  
+	  if(output == null)
       {
-    	  System.exit(0);
+    	  return "cancel";
       }
+	  
+	  while(output.equals(""))
+	  {
+		  output = JOptionPane.showInputDialog(context);
+	  } 
+      
       return output;
    }
    

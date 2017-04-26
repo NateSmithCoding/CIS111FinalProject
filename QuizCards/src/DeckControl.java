@@ -46,17 +46,21 @@ public class DeckControl {
 	public static void createDeck() throws IOException{
 		
 		String deckName = QuizMain.inputString("Enter a deck name");
-		Card[] cardArr = new Card[0];
-		
-		do
+		boolean cancel = deckName.equals("cancel");
+		if(!cancel)
 		{
-			Card userCard = createCard();
+			Card[] cardArr = new Card[0];
 			
-			cardArr = QuizMain.addCard(cardArr, userCard);
-		}while(QuizMain.confirmDialog("Add another card?"));
-		
-		Deck userdeck = new Deck(deckName,  cardArr);
-		userdeck.createTxt();
+			do
+			{
+				Card userCard = createCard();
+				
+				cardArr = QuizMain.addCard(cardArr, userCard);
+			}while(QuizMain.confirmDialog("Add another card?"));
+			
+			Deck userdeck = new Deck(deckName,  cardArr);
+			userdeck.createTxt();
+		}
 	}
 	
 	//Deck deleting method
@@ -68,38 +72,42 @@ public class DeckControl {
 		QuizMain.sortStrings(deckArr);
 		String deleteChoice = QuizMain.dropdownString("Choose a deck to delete", deckArr);
 		
-		String[] deckTemp = new String[deckArr.length-1];
-		int j = 0;
-		for(int i = 0; i < deckArr.length; i++)
+		boolean cancel = deleteChoice.equals("cancel");
+		
+		if(!cancel)
 		{
-			
-			if(!deckArr[i].equals(deleteChoice))
-			{	
-				deckTemp[j++] = deckArr[i];
+			String[] deckTemp = new String[deckArr.length-1];
+			int j = 0;
+			for(int i = 0; i < deckArr.length; i++)
+			{
 				
-				System.out.println(deckTemp[j-1]);
-			
+				if(!deckArr[i].equals(deleteChoice))
+				{	
+					deckTemp[j++] = deckArr[i];
+					
+					System.out.println(deckTemp[j-1]);
+				
+				}
+				
 			}
+			//Changing Deck_Names.txt
+			File nameFile = new File("Deck_Names.txt");
+		      nameFile.createNewFile();
+		      
+		      PrintWriter namePrint = new PrintWriter(nameFile);
+		      
+		      for(String str: deckTemp)
+		      {
+		    	  namePrint.println(str);
+		      }
 			
+		    namePrint.close();
+			
+		    //Delete deck file  
+		    File deleteFile = new File("Decks/"+deleteChoice+".deck");
+			
+			deleteFile.delete();
 		}
-		//Changing Deck_Names.txt
-		File nameFile = new File("Deck_Names.txt");
-	      nameFile.createNewFile();
-	      
-	      PrintWriter namePrint = new PrintWriter(nameFile);
-	      
-	      for(String str: deckTemp)
-	      {
-	    	  namePrint.println(str);
-	      }
-		
-	    namePrint.close();
-		
-	    //Delete deck file  
-	    File deleteFile = new File("Decks/"+deleteChoice+".deck");
-		
-		deleteFile.delete();
-		
 	}
 	
 	//Deck edit method 
@@ -108,14 +116,17 @@ public class DeckControl {
 			
 		String[] deckArr = QuizMain.getDeckNames();
 		QuizMain.sortStrings(deckArr);
-		String deckChoice = QuizMain.dropdownString("Choose a deck to edit", deckArr);	
-		File editFile = new File("Decks/" + deckChoice + ".deck");
-		Deck editDeck = QuizMain.getDeckFromFile(editFile);
-		String[] addRemove = {"Add Card" , "Remove Card"};
-		QuizMain.displayString(editDeck.toString());
-		String editChoice = QuizMain.dropdownString("Add or Remove" ,addRemove);
-		controlCard(editDeck, editChoice);	
-		
+		String deckChoice = QuizMain.dropdownString("Choose a deck to edit", deckArr);
+		boolean cancel = deckChoice.equals("cancel");
+		if(!cancel)
+		{
+			File editFile = new File("Decks/" + deckChoice + ".deck");
+			Deck editDeck = QuizMain.getDeckFromFile(editFile);
+			String[] addRemove = {"Add Card" , "Remove Card"};
+			QuizMain.displayString(editDeck.toString());
+			String editChoice = QuizMain.dropdownString("Add or Remove" ,addRemove);
+			controlCard(editDeck, editChoice);	
+		}
 	}	
 	
 	//Card control method
@@ -128,12 +139,18 @@ public class DeckControl {
 			deck.removeCardIndex(cardRemove-1);
 			deck.createTxt();
 		}
-		else{
-			
+		else if(editChoice.equals("Add Card"))
+		{	
 			Card newCard = createCard();
-			deck.addCard(newCard);
-			deck.createTxt();
-			
+			if(!newCard.getQuestion().equals(""))
+			{
+				deck.addCard(newCard);
+				deck.createTxt();
+			}
+		}
+		else
+		{
+			editDeck();
 		}
 		
 		
@@ -148,11 +165,18 @@ public class DeckControl {
 	{
 		Card newCard = new Card("","");
 		do{
-			newCard = new Card(QuizMain.inputString("Enter Question"),
-								   (QuizMain.inputString("Enter Answer")));
-			if(!noBar(newCard))
+			String question = QuizMain.inputString("Enter Question");
+			String answer = QuizMain.inputString("Enter Answer");
+			
+			boolean cancel = (question.equals("cancel")) || (answer.equals("cancel")); 
+			
+			if(!cancel)
 			{
-				QuizMain.displayString("The '|' character is not allowed.");
+				newCard = new Card(question,answer);
+				if(!noBar(newCard))
+				{
+					QuizMain.displayString("The '|' character is not allowed.");
+				}
 			}
 		}while(!noBar(newCard));
 		return newCard;
