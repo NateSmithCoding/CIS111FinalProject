@@ -31,62 +31,68 @@ public class QuizMain
 	  //STUDY SESSION BELOW
 	  Deck currentDeck = createStudyDeck(allDecksNames);
 	  
-	  int repeatTimes = 0;
-	  do
+	  if(!currentDeck.getName().equals("cancel"))
 	  {
-		  repeatTimes = inputNumber("How many times should each question be asked?");
-		  if(repeatTimes<1)
+		  
+		  int repeatTimes = 0;
+		  do
 		  {
-			  displayString("Error, need to go through at least once.");
+			  repeatTimes = inputNumber("How many times should each question be asked?");
+			  if(repeatTimes<1)
+			  {
+				  displayString("Error, need to go through at least once.");
+			  }
+		  } while(repeatTimes<1);
+		  
+		  Card[] tempCards = currentDeck.getCards();
+		  for(int i=1;i<repeatTimes;i++)
+		  {
+			  currentDeck.addCards(tempCards);
 		  }
-	  } while(repeatTimes<1);
-	  
-	  Card[] tempCards = currentDeck.getCards();
-	  for(int i=1;i<repeatTimes;i++)
-	  {
-		  currentDeck.addCards(tempCards);
-	  }
-	  
-	  currentDeck.shuffle();//shuffle deck
-	  
-	  int cardsLeft=currentDeck.length()-1;
-	  for(int k=0;k<currentDeck.length();k++)//k is the times 
-	  {
-		  Card[] studyCards = currentDeck.getCards();
-		  int quizInt=0;
-		  do{//question loop
-	    	  quizInt = quizCardDialog(studyCards[k].getQuestion()+"\nQuestions left: " + cardsLeft,"Show Answer");
-	    	  if(quizInt==1)
-	    	  {
-	    		  displayString("Question Flagged ");
-	    		  currentDeck.addCardRandomIndex(studyCards[k],k);
-	    		  cardsLeft++;
-	    	  }
-	    	  else if(quizInt == 2)
-	    	  {
-	    		  if(quitDialog())
-	    		  {
-	    			  System.exit(0);
-	    		  }
-	    	  }
-		  }while(quizInt!=0);
-		  cardsLeft--;
-		  do{//answer loop
-	    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
-	    	  if(quizInt==1)
-	    	  {
-	    		  displayString("Question Flagged");
-	    		  currentDeck.addCardRandomIndex(studyCards[k],k);
-	    		  cardsLeft++;
-	    	  }
-	    	  else if(quizInt == 2)
-	    	  {
-	    		  if(quitDialog())
-	    		  {
-	    			  System.exit(0);
-	    		  }
-	    	  }
-		  }while(quizInt !=0);
+		  
+		  currentDeck.shuffle();//shuffle deck
+		  
+		  int cardsLeft=currentDeck.length()-1;
+		  for(int k=0;k<currentDeck.length();k++)//k is the times 
+		  {
+			  Card[] studyCards = currentDeck.getCards();
+			  int quizInt=0;
+			  do{//question loop
+		    	  quizInt = quizCardDialog(studyCards[k].getQuestion()+"\nQuestions left: " + cardsLeft,"Show Answer");
+		    	  if(quizInt==1)
+		    	  {
+		    		  displayString("Question Flagged ");
+		    		  currentDeck.addCardRandomIndex(studyCards[k],k);
+		    		  cardsLeft++;
+		    	  }
+		    	  else if(quizInt == 2)
+		    	  {
+		    		  if(quitDialog())
+		    		  {
+		    			  k=9999;
+		    			  DeckControl.controlMethod();
+		    		  }
+		    	  }
+			  }while(quizInt!=0);
+			  cardsLeft--;
+			  do{//answer loop
+		    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
+		    	  if(quizInt==1)
+		    	  {
+		    		  displayString("Question Flagged");
+		    		  currentDeck.addCardRandomIndex(studyCards[k],k);
+		    		  cardsLeft++;
+		    	  }
+		    	  else if(quizInt == 2)
+		    	  {
+		    		  if(quitDialog())
+		    		  {
+		    			  k=9999;
+		    			  DeckControl.controlMethod();
+		    		  }
+		    	  }
+			  }while(quizInt !=0);
+		  }
 	  }
    }
    
@@ -218,6 +224,10 @@ public class QuizMain
 	         {
 	            addDeck= false;
 	         }
+         }
+         else if(cancel)
+         {
+        	 return new Deck("cancel",null);
          }
       }
       return new Deck("Current Deck",currentCards);
@@ -401,10 +411,13 @@ public class QuizMain
    {
 	  String inputNum="";
       do{//check input in range
-         inputNum = JOptionPane.showInputDialog(context);
+         inputNum = JOptionPane.showInputDialog(context,null);
    	  	if(inputNum==null)
    	  	{
-   		   System.exit(0);
+   	  		if(quitDialog())
+   	  		{
+   	  			System.exit(0);
+   	  		}
    	  	}
         if( isNumeric(inputNum))
         {
@@ -480,5 +493,19 @@ public class QuizMain
    public static int combinations(int n)//gets the size for a multideck
    {
 	   return (n*(n+1))/2;
+   }
+
+   public static int dropdownInt(String context, String[] options) 
+   {
+	   JComboBox comboBox = new JComboBox(options);
+		boolean canceled = false;
+		do{
+			canceled = 2==JOptionPane.showConfirmDialog(null, comboBox, context, JOptionPane.OK_CANCEL_OPTION);
+			if(canceled)
+			{
+				return -999;
+			}
+		} while(canceled);
+		return comboBox.getSelectedIndex();
    }
 }

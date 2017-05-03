@@ -20,11 +20,13 @@ public class DeckControl {
 			
   			if(controlChoice.equals("Create"))
 			{
-				createDeck();
+					createDeck();
 			}
 			else if(controlChoice.equals("Edit"))
-			{
+			{	
+				do{
 				editDeck();
+				}while(QuizMain.confirmDialog("Edit another card?"));
 			}
 			else if(controlChoice.equals("Delete"))
 			{
@@ -36,7 +38,10 @@ public class DeckControl {
 			}
 			else
 			{
-				QuizMain.quitDialog();
+				if(QuizMain.quitDialog())
+				{
+					quit = true;
+				}
 			}
 		}
 		while(!quit);
@@ -123,7 +128,6 @@ public class DeckControl {
 			File editFile = new File("Decks/" + deckChoice + ".deck");
 			Deck editDeck = QuizMain.getDeckFromFile(editFile);
 			String[] addRemove = {"Add Card" , "Remove Card"};
-			QuizMain.displayString(editDeck.toString());
 			String editChoice = QuizMain.dropdownString("Add or Remove" ,addRemove);
 			controlCard(editDeck, editChoice);	
 		}
@@ -135,9 +139,15 @@ public class DeckControl {
 		
 		if(editChoice.equals("Remove Card"))
 		{
-			int cardRemove = QuizMain.inputNumber(deck.toString());
-			deck.removeCardIndex(cardRemove-1);
+			String[] cardsStrings = cardsToStrings(deck.getCards());
+			int cardRemove = QuizMain.dropdownInt("Cards",cardsStrings);
+			try{
+			deck.removeCardIndex(cardRemove);
 			deck.createTxt();
+			} catch(Exception e)
+			{
+				
+			}
 		}
 		else if(editChoice.equals("Add Card"))
 		{	
@@ -153,14 +163,19 @@ public class DeckControl {
 			editDeck();
 		}
 		
-		
-			
-			
-		
-		
-		
 	}
 	
+	private static String[] cardsToStrings(Card[] cards) 
+	{
+		String[] output = new String[cards.length];
+		int i=0;
+		for (Card c : cards)
+		{
+			output[i++]= i + ": "+ c.getQuestion() +" | "+ c.getAnswer();
+		}
+		return output;
+	}
+
 	public static Card createCard()
 	{
 		Card newCard = new Card("","");
