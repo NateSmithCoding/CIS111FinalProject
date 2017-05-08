@@ -15,10 +15,10 @@ public class QuizMain
       deckDir.mkdir();
       
       DeckControl.controlMethod();
-      
-      //studySession();//everything for study session is in this one method     
+           
    }
    
+   //user chooses decks and then the questions are asked
    public static void studySession() throws IOException
    {
 	
@@ -96,6 +96,7 @@ public class QuizMain
 	  }
    }
    
+   //sorts strings in alpha 
    public static void sortStrings( String[] strings )
    {
      int j;
@@ -118,6 +119,7 @@ public class QuizMain
       } 
    } 
    
+   //compares strings alphabetically
    public static boolean alphaCompare(String stringA, String stringB)//returns true if a is alphabetically before b
    {
 	   
@@ -139,6 +141,7 @@ public class QuizMain
 	   return stringA.length()-stringB.length()<0;
    }
 
+   //reads "deck_names" file and returns the string array of there names
    public static String[] getDeckNames() throws IOException 
    {
       //get the text file with all the deck names
@@ -160,23 +163,26 @@ public class QuizMain
       Scanner scanNames = new Scanner(deckNames);//scan lines
       while(scanNames.hasNext())
       {
-    	  allDecksNames[k++] = scanNames.nextLine();
+    	  allDecksNames[k++] = scanNames.nextLine();//filling the array with text file
       }
       scanNames.close();
       
       return allDecksNames;
    }
-
+   
+   //quick way to do Yes No Joption pane
    public static boolean confirmDialog(String display)
    {
 	   return (0==JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null));
    }
    
+   //JoptionPane with 3 options(for the quiz cards)
    public static int quizCardDialog(String display,String option1)
    {
 	   Object[] options1 = { option1, "Flag","Quit" };
 	   return JOptionPane.showOptionDialog(null, display, "Confirm", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, options1, null);
    }
+   
    
    
    public static void displayString(String display)

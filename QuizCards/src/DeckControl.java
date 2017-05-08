@@ -3,6 +3,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import javax.swing.JOptionPane;
+
 import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 
@@ -11,7 +13,7 @@ public class DeckControl {
 	public static void controlMethod() throws IOException{
 		// TODO Auto-generated method stub
 		
-		
+		//Main menu drop down
   		String[] deckOptions = {"Start Study Session","Create", "Edit", "Delete","Quit"};
   		boolean quit = false;
   		do{
@@ -24,9 +26,7 @@ public class DeckControl {
 			}
 			else if(controlChoice.equals("Edit"))
 			{	
-				do{
 				editDeck();
-				}while(QuizMain.confirmDialog("Edit another card?"));
 			}
 			else if(controlChoice.equals("Delete"))
 			{
@@ -79,7 +79,13 @@ public class DeckControl {
 		
 		boolean cancel = deleteChoice.equals("cancel");
 		
-		if(!cancel)
+		String spanish = deleteChoice.toLowerCase();
+		String context = "Are you sure want to delete?";
+		if(spanish.contains("spanish"))
+		{
+			context = "¿Estas seguro que quieres borrarlo?";
+		}
+		if(!cancel && QuizMain.confirmDialog(context))
 		{
 			String[] deckTemp = new String[deckArr.length-1];
 			int j = 0;
@@ -90,7 +96,6 @@ public class DeckControl {
 				{	
 					deckTemp[j++] = deckArr[i];
 					
-					System.out.println(deckTemp[j-1]);
 				
 				}
 				
@@ -101,13 +106,18 @@ public class DeckControl {
 		      
 		      PrintWriter namePrint = new PrintWriter(nameFile);
 		      
+		      String deckrem = "Decks Remaining:\n";
+		      
 		      for(String str: deckTemp)
 		      {
 		    	  namePrint.println(str);
+		    	  deckrem += str+"\n";
 		      }
 			
+		    QuizMain.displayString(deckrem);
 		    namePrint.close();
 			
+		    
 		    //Delete deck file  
 		    File deleteFile = new File("Decks/"+deleteChoice+".deck");
 			
@@ -123,13 +133,17 @@ public class DeckControl {
 		QuizMain.sortStrings(deckArr);
 		String deckChoice = QuizMain.dropdownString("Choose a deck to edit", deckArr);
 		boolean cancel = deckChoice.equals("cancel");
-		if(!cancel)
+		while(!cancel)
 		{
 			File editFile = new File("Decks/" + deckChoice + ".deck");
 			Deck editDeck = QuizMain.getDeckFromFile(editFile);
 			String[] addRemove = {"Add Card" , "Remove Card"};
 			String editChoice = QuizMain.dropdownString("Add or Remove" ,addRemove);
-			controlCard(editDeck, editChoice);	
+			controlCard(editDeck, editChoice);
+			if(editChoice.equals("cancel"))
+			{
+				cancel = QuizMain.confirmDialog("Stop editing?");
+			}
 		}
 	}	
 	
@@ -158,13 +172,9 @@ public class DeckControl {
 				deck.createTxt();
 			}
 		}
-		else
-		{
-			editDeck();
-		}
-		
 	}
 	
+	//Converting cards into strings
 	private static String[] cardsToStrings(Card[] cards) 
 	{
 		String[] output = new String[cards.length];
@@ -175,47 +185,39 @@ public class DeckControl {
 		}
 		return output;
 	}
-
+	
+	//Creating cards
 	public static Card createCard()
 	{
 		Card newCard = new Card("","");
+		String question;
+		String answer;
+		boolean noBar;
 		do{
-			String question = QuizMain.inputString("Enter Question");
-			String answer = QuizMain.inputString("Enter Answer");
-			
+			question = QuizMain.inputString("Enter Question");
+			noBar = noBar(question);
+		}while(!noBar);
+		
+		do{
+			answer   = QuizMain.inputString("Enter Answer");
+			noBar = noBar(answer);
+		}while(!noBar);
 			boolean cancel = (question.equals("cancel")) || (answer.equals("cancel")); 
 			
 			if(!cancel)
 			{
 				newCard = new Card(question,answer);
-				if(!noBar(newCard))
-				{
-					QuizMain.displayString("The '|' character is not allowed.");
-				}
 			}
-		}while(!noBar(newCard));
 		return newCard;
 	}
 	
-	public static boolean noBar(Card newCard) 
+	//Makes sure the user can't use a "|" character as to avoid formatting errors
+	public static boolean noBar(String str) 
 	{
-		String q = newCard.getQuestion();
-		String a = newCard.getAnswer();
-		
-		for(char c : q.toCharArray())
+		if(str.contains("|"))
 		{
-			if(c == '|')
-			{
-				return false;
-			}
-		}
-		
-		for(char c : a.toCharArray())
-		{
-			if(c == '|')
-			{
-				return false;
-			}
+			QuizMain.displayString("The '|' character is not allowed.");
+			return false;
 		}
 		return true;
 	}
