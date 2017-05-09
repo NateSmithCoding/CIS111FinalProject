@@ -82,7 +82,7 @@ public class QuizMain
 		    	  {
 		    		  if(quitDialog())
 		    		  {
-		    			  k=9999;
+		    			  k=Integer.MAX_VALUE-10;
 		    			  quizInt=0;
 		    			  //DeckControl.controlMethod();
 		    		  }
@@ -90,7 +90,7 @@ public class QuizMain
 			  }while(quizInt!=0);
 			  cardsLeft--;
 			  do{//answer loop
-				  if(k!=9999)
+				  if(k!=Integer.MAX_VALUE-10)
 				  {
 			    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
 			    	  if(quizInt==1)
@@ -103,7 +103,7 @@ public class QuizMain
 			    	  {
 			    		  if(quitDialog())
 			    		  {
-			    			  k=9999;
+			    			  k=Integer.MAX_VALUE-10;
 			    			  quizInt=0;
 			    		  }
 			    	  }
