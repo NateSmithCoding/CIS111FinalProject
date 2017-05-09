@@ -28,22 +28,35 @@ public class QuizMain
 	  //sort deck names alphabetically
 	  sortStrings(allDecksNames);
 	  
-	  //STUDY SESSION BELOW
-	  Deck currentDeck = createStudyDeck(allDecksNames);
 	  
-	  if(!currentDeck.getName().equals("cancel"))
+	  //STUDY SESSION BELOW
+	  int repeatTimes=0;
+	  Deck currentDeck = null;
+	  boolean cancelCheck = false;
+	  while (repeatTimes==0)
 	  {
-		  
-		  int repeatTimes = 0;
-		  do
+		  currentDeck = createStudyDeck(allDecksNames);
+		  cancelCheck = currentDeck.getName().equals("cancel");
+		  if(!cancelCheck)
 		  {
-			  repeatTimes = inputNumber("How many times should each question be asked?");
-			  if(repeatTimes<1)
+			  do
 			  {
-				  displayString("Error, need to go through at least once.");
+				  repeatTimes = inputNumber("How many times should each question be asked?");
+				  if(repeatTimes<1 && repeatTimes!=-99)
+				  {
+					  displayString("Error, need to go through at least once.");
+				  }
+			  } while(repeatTimes<1 && repeatTimes!=-99);
+			  
+			  if(repeatTimes==-99)
+			  {
+				  repeatTimes=0;
+				  currentDeck =  new Deck("cancel",null);
 			  }
-		  } while(repeatTimes<1);
-		  
+		  }
+	  }
+	  if(!cancelCheck)
+	  {
 		  Card[] tempCards = currentDeck.getCards();
 		  for(int i=1;i<repeatTimes;i++)
 		  {
@@ -70,27 +83,31 @@ public class QuizMain
 		    		  if(quitDialog())
 		    		  {
 		    			  k=9999;
-		    			  DeckControl.controlMethod();
+		    			  quizInt=0;
+		    			  //DeckControl.controlMethod();
 		    		  }
 		    	  }
 			  }while(quizInt!=0);
 			  cardsLeft--;
 			  do{//answer loop
-		    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
-		    	  if(quizInt==1)
-		    	  {
-		    		  displayString("Question Flagged");
-		    		  currentDeck.addCardRandomIndex(studyCards[k],k);
-		    		  cardsLeft++;
-		    	  }
-		    	  else if(quizInt == 2)
-		    	  {
-		    		  if(quitDialog())
-		    		  {
-		    			  k=9999;
-		    			  DeckControl.controlMethod();
-		    		  }
-		    	  }
+				  if(k!=9999)
+				  {
+			    	  quizInt = quizCardDialog(studyCards[k].getAnswer(), "Next Question");
+			    	  if(quizInt==1)
+			    	  {
+			    		  displayString("Question Flagged");
+			    		  currentDeck.addCardRandomIndex(studyCards[k],k);
+			    		  cardsLeft++;
+			    	  }
+			    	  else if(quizInt == 2)
+			    	  {
+			    		  if(quitDialog())
+			    		  {
+			    			  k=9999;
+			    			  quizInt=0;
+			    		  }
+			    	  }
+				  }
 			  }while(quizInt !=0);
 		  }
 	  }
@@ -420,10 +437,7 @@ public class QuizMain
          inputNum = JOptionPane.showInputDialog(context,null);
    	  	if(inputNum==null)
    	  	{
-   	  		if(quitDialog())
-   	  		{
-   	  			System.exit(0);
-   	  		}
+  			return -99;
    	  	}
         if( isNumeric(inputNum))
         {
