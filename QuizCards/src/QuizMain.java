@@ -13,7 +13,6 @@ public class QuizMain
          
       // create decks folder
       deckDir.mkdir();
-      
       DeckControl.controlMethod();
            
    }
@@ -454,18 +453,17 @@ public class QuizMain
    
    public static String inputString(String context)//shorter input dialog
    {
+	  String output ="";
 	  
-	  String output = JOptionPane.showInputDialog(context);
-	  
-	  if(output == null)
-      {
-    	  return "cancel";
-      }
-	  
-	  while(output.equals(""))
+	  do
 	  {
 		  output = JOptionPane.showInputDialog(context);
-	  } 
+		  
+		  if(output == null)
+	      {
+	    	  return "cancel";
+	      }
+	  } while(output.equals(""));
       
       return output;
    }

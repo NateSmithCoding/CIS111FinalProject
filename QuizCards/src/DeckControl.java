@@ -198,16 +198,20 @@ public class DeckControl {
 			noBar = noBar(question);
 		}while(!noBar);
 		
-		do{
-			answer   = QuizMain.inputString("Enter Answer");
-			noBar = noBar(answer);
-		}while(!noBar);
+		boolean qCanceled = question.equals("cancel");
+		if(!qCanceled)
+		{
+			do{
+				answer   = QuizMain.inputString("Enter Answer");
+				noBar = noBar(answer);
+			}while(!noBar);
 			boolean cancel = (question.equals("cancel")) || (answer.equals("cancel")); 
-			
+				
 			if(!cancel)
 			{
 				newCard = new Card(question,answer);
 			}
+		}
 		return newCard;
 	}
 	
